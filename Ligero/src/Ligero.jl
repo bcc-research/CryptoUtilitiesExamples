@@ -32,10 +32,6 @@ next_pow_two(x) = 1 << (1 + floor(Int, log2(x - 1)))
 #     return current_layer
 # end
 
-# struct Message{T <: BinaryElem}
-#     data::Matrix{T}
-# end
-
 struct LigeroProofProperties
     log2_prob::Int
     inv_rate::Int
@@ -64,6 +60,8 @@ matrix(c::LigeroCommitment) = c.mat
 struct LigeroVerifierCommitment
     root::String
 end
+
+sizeof(x::LigeroVerifierCommitment) = sizeof(x.root)
 
 verifier_commitment(com) = LigeroVerifierCommitment(get_root(com.tree))
 
@@ -138,10 +136,26 @@ function prove(comm::LigeroCommitment{T}, gr, S_sorted) where {T <: BinaryElem}
     return LigeroProof(y_r, openings, comm.mat[S_sorted, :], comm.rs)
 end
 
-function verify(proof::LigeroProof, com::LigeroVerifierCommitment, S_sorted)
+function verify(proof::LigeroProof, com::LigeroVerifierCommitment, S_sorted, gr)
     t_depth = log_block_length(proof.rs)
 
-    @show verify_proof(com.root, t_depth, eachrow(proof.rows), S_sorted .- 1, proof.merkle_openings)
+    # Merkle inclusion proof verification
+    if !verify_proof(com.root, t_depth, eachrow(proof.rows), S_sorted, proof.merkle_openings)
+        # XXX: maybe improve output
+        @warn "Merkle inclusion proof failed to verify"
+        return false
+    end
+
+    enc_y = encode(proof.rs, proof.y_r)
+    expected_output = @views proof.rows * gr
+
+    # Check if the output of the encoding matches the expected output
+    if enc_y[S_sorted] != expected_output
+        @warn "Encoding verification failed"
+        return false
+    end
+
+    return true
 end
 
 
