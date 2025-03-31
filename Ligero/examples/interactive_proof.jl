@@ -5,7 +5,7 @@ using BinaryFields, BinaryReedSolomon
 poly = rand(BinaryElem16, 2^24)
 
 @info "Constructing commitment"
-comm = commit(poly; verbose=true, parallel=false)
+comm = commit(poly; verbose=true)
 verifier_comm = verifier_commitment(comm)
 @info "Verifier commitment size: $(Base.format_bytes(sizeof(verifier_comm)))"
 
@@ -23,5 +23,4 @@ proof_size = sizeof(proof)
 @info "Proof size: $(Base.format_bytes(proof_size))"
 
 @info "Verifying proof"
-verified = verify(proof, verifier_comm, S_sorted, gr)
-@show verified;
+@show verify(proof, verifier_comm, S_sorted, gr)
