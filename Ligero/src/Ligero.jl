@@ -146,6 +146,7 @@ function verify(proof::LigeroProof, com::LigeroVerifierCommitment, S_sorted, gr)
         return false
     end
 
+    # Looks very innocent! Consider the fields being used here
     enc_y = encode(proof.rs, proof.y_r)
     expected_output = @views proof.rows * gr
 
