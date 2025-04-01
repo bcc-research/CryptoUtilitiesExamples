@@ -11,27 +11,6 @@ export commit, matrix, verifier_commitment, prove, verify
 is_pow_two(x) = x & (x - 1) == 0
 next_pow_two(x) = 1 << (1 + floor(Int, log2(x - 1)))
 
-# function evaluate_lagrange_basis(rs::Vector{T}) where T <: BinaryElem
-#     one_elem = T(one(T))
-#     current_layer = [one_elem + rs[1], rs[1]]
-#     len = 2
-#     for i in 2:length(rs)
-#         next_layer_size = 2 * len
-#         next_layer = Vector{T}(undef, next_layer_size)
-
-#         ri_p_one = one_elem + rs[i]
-#         for j in 1:len
-#             next_layer[2*j - 1] = current_layer[j] * ri_p_one
-#             next_layer[2*j]   = current_layer[j] * rs[i]
-#         end
-
-#         current_layer = next_layer
-#         len *= 2
-#     end
-
-#     return current_layer
-# end
-
 struct LigeroProofProperties
     log2_prob::Int
     inv_rate::Int
@@ -51,14 +30,14 @@ end
 
 struct LigeroCommitment{T}
     mat::Matrix{T}
-    tree::Vector{Vector{String}}
+    tree::CompleteMerkleTree
     rs::BinaryReedSolomon.ReedSolomonEncoding{T}
 end
 
 matrix(c::LigeroCommitment) = c.mat
 
 struct LigeroVerifierCommitment
-    root::String
+    root::MerkleRoot
 end
 
 sizeof(x::LigeroVerifierCommitment) = sizeof(x.root)
@@ -120,7 +99,7 @@ end
 
 struct LigeroProof{T, U} 
     y_r::Vector{U}
-    merkle_openings::Vector{String}
+    merkle_openings::BatchedMerkleProof
     rows::Matrix{T}
     rs::BinaryReedSolomon.ReedSolomonEncoding{T}
 end
@@ -130,7 +109,7 @@ sizeof(x::LigeroProof) = sizeof(x.y_r) + sizeof(x.merkle_openings) + sizeof(x.ro
 function prove(comm::LigeroCommitment{T}, gr, S_sorted) where {T <: BinaryElem}
     n_rows = message_length(comm.rs)
 
-    openings = create_proof(comm.tree, S_sorted)
+    openings = MerkleTree.prove(comm.tree, S_sorted)
     y_r = @views comm.mat[1:n_rows, :] * gr
 
     return LigeroProof(y_r, openings, comm.mat[S_sorted, :], comm.rs)
@@ -140,8 +119,12 @@ function verify(proof::LigeroProof, com::LigeroVerifierCommitment, S_sorted, gr)
     t_depth = log_block_length(proof.rs)
 
     # Merkle inclusion proof verification
-    if !verify_proof(com.root, t_depth, eachrow(proof.rows), S_sorted, proof.merkle_openings)
-        # XXX: maybe improve output
+    # XXX: maybe improve output, specify which row proof failed
+    if !MerkleTree.verify(com.root, proof.merkle_openings;
+            depth = t_depth,
+            leaves = eachrow(proof.rows),
+            leaf_indices = S_sorted
+        )
         @warn "Merkle inclusion proof failed to verify"
         return false
     end
