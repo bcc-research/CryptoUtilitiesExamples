@@ -109,7 +109,7 @@ sizeof(x::LigeroProof) = sizeof(x.y_r) + sizeof(x.merkle_openings) + sizeof(x.ro
 function prove(comm::LigeroCommitment{T}, gr, S_sorted) where {T <: BinaryElem}
     n_rows = message_length(comm.rs)
 
-    openings = MerkleTree.prove(comm.tree, S_sorted)
+    openings = BatchedMerkleTree.prove(comm.tree, S_sorted)
     y_r = @views comm.mat[1:n_rows, :] * gr
 
     return LigeroProof(y_r, openings, comm.mat[S_sorted, :], comm.rs)
@@ -120,7 +120,7 @@ function verify(proof::LigeroProof, com::LigeroVerifierCommitment, S_sorted, gr)
 
     # Merkle inclusion proof verification
     # XXX: maybe improve output, specify which row proof failed
-    if !MerkleTree.verify(com.root, proof.merkle_openings;
+    if !BatchedMerkleTree.verify(com.root, proof.merkle_openings;
             depth = t_depth,
             leaves = eachrow(proof.rows),
             leaf_indices = S_sorted
