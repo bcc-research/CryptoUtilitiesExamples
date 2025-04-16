@@ -2,7 +2,7 @@
 
 julia_version = "1.11.2"
 manifest_format = "2.0"
-project_hash = "1dea0cc02893c8dc0a3ad01fcda7cb3d8e4f619a"
+project_hash = "8b61978c3c5a339e7e3a35f26917d025787a5aca"
 
 [[deps.AliasTables]]
 deps = ["PtrArrays", "Random"]
@@ -17,6 +17,15 @@ version = "1.11.0"
 [[deps.Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 version = "1.11.0"
+
+[[deps.BatchedMerkleTree]]
+deps = ["SHA"]
+git-tree-sha1 = "542f94c2e6049458e1b7a489b9c2b0cddae59cc4"
+repo-rev = "main"
+repo-subdir = "BatchedMerkleTree"
+repo-url = "https://github.com/bcc-research/CryptoUtilities.jl.git"
+uuid = "225b011c-e439-4471-b39b-04a9a0fe32f0"
+version = "0.1.0"
 
 [[deps.BinaryFields]]
 deps = ["Random", "SIMD"]
@@ -110,12 +119,6 @@ version = "0.3.29"
 deps = ["Base64"]
 uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
 version = "1.11.0"
-
-[[deps.MerkleTree]]
-deps = ["SHA"]
-path = "../../CryptoUtilities.jl/MerkleTree"
-uuid = "225b011c-e439-4471-b39b-04a9a0fe32f0"
-version = "0.1.0"
 
 [[deps.Missings]]
 deps = ["DataAPI"]

@@ -3,7 +3,7 @@ module Ligero
 import Base: sizeof
 
 using Base.Threads, ThreadTools
-using BinaryFields, MerkleTree, BinaryReedSolomon
+using BinaryFields, BatchedMerkleTree, BinaryReedSolomon
 
 export LigeroProofProperties, LigeroCommitment, LigeroVerifierCommitment, LigeroProofProperties
 export commit, matrix, verifier_commitment, prove, verify
